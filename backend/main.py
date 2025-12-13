@@ -1,11 +1,9 @@
-from fastapi import FastAPI, Form
+from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List, Dict, Any
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,55 +11,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class PipelineData(BaseModel):
-    nodes: List[Dict[str, Any]]
-    edges: List[Dict[str, Any]]
+class Pipeline(BaseModel):
+    nodes: list
+    edges: list
 
-def is_dag(nodes, edges):
-    # Build adjacency list
-    adj_list = {node['id']: [] for node in nodes}
-    for edge in edges:
-        if edge['source'] in adj_list:
-            adj_list[edge['source']].append(edge['target'])
-    
-    # DFS to detect cycle
-    visited = set()
-    recursion_stack = set()
-    
-    def dfs(node_id):
-        visited.add(node_id)
-        recursion_stack.add(node_id)
-        
-        if node_id in adj_list:
-            for neighbor in adj_list[node_id]:
-                if neighbor not in visited:
-                    if dfs(neighbor):
-                        return True
-                elif neighbor in recursion_stack:
-                    return True # Cycle detected
-        
-        recursion_stack.remove(node_id)
-        return False
+@app.post("/pipelines/parse")
+def parse_pipeline(pipeline: Pipeline):
+    nodes = {n["id"] for n in pipeline.nodes}
+    edges = pipeline.edges
 
-    for node in nodes:
-        if node['id'] not in visited:
-            if dfs(node['id']):
-                return False # Cycle found, so not a DAG
-                
-    return True # No cycles found
+    adj = {n: [] for n in nodes}
+    for e in edges:
+        if e["source"] in nodes and e["target"] in nodes:
+            adj[e["source"]].append(e["target"])
 
-@app.get('/')
-def read_root():
-    return {'Ping': 'Pong'}
+    visited, stack = set(), set()
 
-@app.post('/pipelines/parse')
-def parse_pipeline(pipeline: PipelineData):
-    num_nodes = len(pipeline.nodes)
-    num_edges = len(pipeline.edges)
-    is_dag_result = is_dag(pipeline.nodes, pipeline.edges)
-    
+    def dfs(v):
+        if v in stack:
+            return False
+        if v in visited:
+            return True
+        visited.add(v)
+        stack.add(v)
+        for n in adj[v]:
+            if not dfs(n):
+                return False
+        stack.remove(v)
+        return True
+
+    is_dag = all(dfs(n) for n in nodes)
+
     return {
-        'num_nodes': num_nodes,
-        'num_edges': num_edges,
-        'is_dag': is_dag_result
+        "num_nodes": len(nodes),
+        "num_edges": len(edges),
+        "is_dag": is_dag
     }

@@ -1,4 +1,3 @@
-// frontend/src/nodes/textNode.js
 import { useState, useEffect, useRef } from 'react';
 import { BaseNode } from './BaseNode';
 import { Position } from 'reactflow';
@@ -6,54 +5,79 @@ import { Position } from 'reactflow';
 export const TextNode = ({ id, data }) => {
   const [currText, setCurrText] = useState(data?.text || '{{input}}');
   const [handles, setHandles] = useState([]);
+  
+  // Refs for the actual input and the hidden measurement element
   const textareaRef = useRef(null);
+  const measureRef = useRef(null);
 
-  // 1. Logic to resize textarea
+  // 1. Logic to resize both Width and Height
   useEffect(() => {
-    if (textareaRef.current) {
+    if (textareaRef.current && measureRef.current) {
+      // a. Reset dimensions momentarily to get accurate scrollHeight later
       textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.width = 'auto';
+
+      // b. Calculate new width based on the hidden div
+      // We start with a min-width of 200px and cap it at 600px
+      const contentWidth = measureRef.current.offsetWidth + 20; // +20 for padding/borders
+      const newWidth = Math.max(200, Math.min(contentWidth, 600));
+      
+      textareaRef.current.style.width = `${newWidth}px`;
+
+      // c. Calculate new height (now that width is set, text might wrap)
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [currText]);
 
-  // 2. Logic to parse variables and create handles
+  // 2. Logic to parse variables (same as before)
   useEffect(() => {
-    // Regex to find things like {{ variableName }}
-    const regex = /\{\{([a-zA-Z_$][a-zA-Z0-9_$]*)\}\}/g;
-    const matches = [...currText.matchAll(regex)].map(match => match[1]);
-    
-    // Create unique handles for variables
+    const variableRegex = /\{\{([a-zA-Z_$][a-zA-Z0-9_$]*)\}\}/g;
+    const matches = [...currText.matchAll(variableRegex)].map(match => match[1]);
     const uniqueVars = [...new Set(matches)];
     
-    const dynamicHandles = uniqueVars.map((varName, index) => ({
+    const newHandles = uniqueVars.map((varName, index) => ({
       type: 'target',
       position: Position.Left,
       id: varName,
-      style: { top: `${(index + 1) * 20 + 30}px` } // Simple manual spacing or let ReactFlow handle it
+      style: { top: `${(index + 1) * 20 + 30}px` }
     }));
 
-    // Add the default output handle
-    dynamicHandles.push({ type: 'source', position: Position.Right, id: 'output' });
-
-    setHandles(dynamicHandles);
+    newHandles.push({ type: 'source', position: Position.Right, id: 'output' });
+    setHandles(newHandles);
   }, [currText]);
-
-  const handleChange = (e) => {
-    setCurrText(e.target.value);
-  };
 
   return (
     <BaseNode id={id} data={data} label="Text" handles={handles}>
-      <label>Text:</label>
+      {/* 
+        Hidden Div for measuring text width. 
+        MUST match the textarea font/padding styles exactly.
+      */}
+      <div
+        ref={measureRef}
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          height: 0,
+          whiteSpace: 'pre', // Force text to stay on one line for width measurement
+          font: '12px "Inter", sans-serif',
+          padding: '6px',
+          border: '1px solid',
+        }}
+      >
+        {currText}
+      </div>
+
       <textarea
         ref={textareaRef}
         value={currText}
-        onChange={handleChange}
-        style={{ 
-          width: '100%', 
-          minHeight: '40px', 
+        onChange={(e) => setCurrText(e.target.value)}
+        style={{
           overflow: 'hidden',
-          resize: 'none' 
+          resize: 'none',
+          boxSizing: 'border-box',
+          font: '12px "Inter", sans-serif', // Ensure font matches measureRef
+          padding: '6px',
+          minWidth: '200px'
         }}
       />
     </BaseNode>
