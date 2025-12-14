@@ -1,7 +1,10 @@
+'use client';
 import { useRef, useEffect, useCallback, useMemo } from 'react';
 import { gsap } from 'gsap';
+import { InertiaPlugin } from 'gsap/InertiaPlugin';
 
-// Helper to throttle mouse events
+gsap.registerPlugin(InertiaPlugin);
+
 const throttle = (func, limit) => {
   let lastCall = 0;
   return function (...args) {
@@ -13,7 +16,6 @@ const throttle = (func, limit) => {
   };
 };
 
-// Helper to convert hex color to RGB
 function hexToRgb(hex) {
   const m = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   if (!m) return { r: 0, g: 0, b: 0 };
@@ -34,6 +36,7 @@ const DotGrid = ({
   shockRadius = 250,
   shockStrength = 5,
   maxSpeed = 5000,
+  resistance = 750,
   returnDuration = 1.5,
   className = '',
   style
@@ -57,36 +60,24 @@ const DotGrid = ({
 
   const circlePath = useMemo(() => {
     if (typeof window === 'undefined' || !window.Path2D) return null;
+
     const p = new Path2D();
     p.arc(0, 0, dotSize / 2, 0, Math.PI * 2);
     return p;
   }, [dotSize]);
 
-const buildGrid = useCallback(() => {
+  const buildGrid = useCallback(() => {
     const wrap = wrapperRef.current;
     const canvas = canvasRef.current;
     if (!wrap || !canvas) return;
 
     const { width, height } = wrap.getBoundingClientRect();
-    
-    // Agar size almost same hai toh loop mat chalao (Float precision fix)
-    if (Math.abs(canvas.width - width * (window.devicePixelRatio || 1)) < 5 && 
-        Math.abs(canvas.height - height * (window.devicePixelRatio || 1)) < 5) {
-      return;
-    }
-
     const dpr = window.devicePixelRatio || 1;
 
-    // --- MAIN FIX IS HERE ---
-    // Sirf internal resolution set karein.
-    // style.width aur style.height ko mat chhediye, CSS (w-full h-full) sambhal lega.
     canvas.width = width * dpr;
     canvas.height = height * dpr;
-    
-    // IMPORTANT: Yeh do lines REMOVE kar di gayi hain taaki resize loop na bane:
-    // canvas.style.width = `${width}px`; 
-    // canvas.style.height = `${height}px`;
-
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.scale(dpr, dpr);
 
@@ -108,42 +99,11 @@ const buildGrid = useCallback(() => {
       for (let x = 0; x < cols; x++) {
         const cx = startX + x * cell;
         const cy = startY + y * cell;
-        dots.push({ cx, cy, xOffset: 0, yOffset: 0, _isAnimating: false });
+        dots.push({ cx, cy, xOffset: 0, yOffset: 0, _inertiaApplied: false });
       }
     }
     dotsRef.current = dots;
   }, [dotSize, gap]);
-
-  // --- FIXED RESIZE OBSERVER LOGIC ---
-  useEffect(() => {
-    // Initial build
-    buildGrid();
-
-    let ro = null;
-    let animationFrameId = null;
-
-    if ('ResizeObserver' in window) {
-      ro = new ResizeObserver(() => {
-        // Wrap in requestAnimationFrame to avoid "ResizeObserver loop completed" error
-        if (animationFrameId) cancelAnimationFrame(animationFrameId);
-        animationFrameId = requestAnimationFrame(() => {
-          buildGrid();
-        });
-      });
-      
-      if (wrapperRef.current) {
-        ro.observe(wrapperRef.current);
-      }
-    } else {
-      window.addEventListener('resize', buildGrid);
-    }
-
-    return () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-      if (ro) ro.disconnect();
-      else window.removeEventListener('resize', buildGrid);
-    };
-  }, [buildGrid]);
 
   useEffect(() => {
     if (!circlePath) return;
@@ -192,6 +152,21 @@ const buildGrid = useCallback(() => {
   }, [proximity, baseColor, activeRgb, baseRgb, circlePath]);
 
   useEffect(() => {
+    buildGrid();
+    let ro = null;
+    if ('ResizeObserver' in window) {
+      ro = new ResizeObserver(buildGrid);
+      wrapperRef.current && ro.observe(wrapperRef.current);
+    } else {
+      window.addEventListener('resize', buildGrid);
+    }
+    return () => {
+      if (ro) ro.disconnect();
+      else window.removeEventListener('resize', buildGrid);
+    };
+  }, [buildGrid]);
+
+  useEffect(() => {
     const onMove = e => {
       const now = performance.now();
       const pr = pointerRef.current;
@@ -201,14 +176,12 @@ const buildGrid = useCallback(() => {
       let vx = (dx / dt) * 1000;
       let vy = (dy / dt) * 1000;
       let speed = Math.hypot(vx, vy);
-      
       if (speed > maxSpeed) {
         const scale = maxSpeed / speed;
         vx *= scale;
         vy *= scale;
         speed = maxSpeed;
       }
-
       pr.lastTime = now;
       pr.lastX = e.clientX;
       pr.lastY = e.clientY;
@@ -216,34 +189,27 @@ const buildGrid = useCallback(() => {
       pr.vy = vy;
       pr.speed = speed;
 
-      if (!canvasRef.current) return;
       const rect = canvasRef.current.getBoundingClientRect();
       pr.x = e.clientX - rect.left;
       pr.y = e.clientY - rect.top;
 
       for (const dot of dotsRef.current) {
         const dist = Math.hypot(dot.cx - pr.x, dot.cy - pr.y);
-        
-        if (speed > speedTrigger && dist < proximity && !dot._isAnimating) {
-          dot._isAnimating = true;
+        if (speed > speedTrigger && dist < proximity && !dot._inertiaApplied) {
+          dot._inertiaApplied = true;
           gsap.killTweensOf(dot);
-          
           const pushX = dot.cx - pr.x + vx * 0.005;
           const pushY = dot.cy - pr.y + vy * 0.005;
-
           gsap.to(dot, {
-            xOffset: pushX,
-            yOffset: pushY,
-            duration: 0.4,
-            ease: "power3.out",
+            inertia: { xOffset: pushX, yOffset: pushY, resistance },
             onComplete: () => {
               gsap.to(dot, {
                 xOffset: 0,
                 yOffset: 0,
                 duration: returnDuration,
-                ease: 'elastic.out(1,0.75)',
-                onComplete: () => { dot._isAnimating = false; }
+                ease: 'elastic.out(1,0.75)'
               });
+              dot._inertiaApplied = false;
             }
           });
         }
@@ -251,34 +217,27 @@ const buildGrid = useCallback(() => {
     };
 
     const onClick = e => {
-      if (!canvasRef.current) return;
       const rect = canvasRef.current.getBoundingClientRect();
       const cx = e.clientX - rect.left;
       const cy = e.clientY - rect.top;
-
       for (const dot of dotsRef.current) {
         const dist = Math.hypot(dot.cx - cx, dot.cy - cy);
-        if (dist < shockRadius && !dot._isAnimating) {
-          dot._isAnimating = true;
+        if (dist < shockRadius && !dot._inertiaApplied) {
+          dot._inertiaApplied = true;
           gsap.killTweensOf(dot);
-          
           const falloff = Math.max(0, 1 - dist / shockRadius);
           const pushX = (dot.cx - cx) * shockStrength * falloff;
           const pushY = (dot.cy - cy) * shockStrength * falloff;
-
           gsap.to(dot, {
-            xOffset: pushX,
-            yOffset: pushY,
-            duration: 0.4,
-            ease: "power3.out",
+            inertia: { xOffset: pushX, yOffset: pushY, resistance },
             onComplete: () => {
               gsap.to(dot, {
                 xOffset: 0,
                 yOffset: 0,
                 duration: returnDuration,
-                ease: 'elastic.out(1,0.75)',
-                onComplete: () => { dot._isAnimating = false; }
+                ease: 'elastic.out(1,0.75)'
               });
+              dot._inertiaApplied = false;
             }
           });
         }
@@ -293,12 +252,14 @@ const buildGrid = useCallback(() => {
       window.removeEventListener('mousemove', throttledMove);
       window.removeEventListener('click', onClick);
     };
-  }, [maxSpeed, speedTrigger, proximity, returnDuration, shockRadius, shockStrength]);
+  }, [maxSpeed, speedTrigger, proximity, resistance, returnDuration, shockRadius, shockStrength]);
 
   return (
-    <div ref={wrapperRef} className={`w-full h-full relative overflow-hidden ${className}`} style={style}>
-      <canvas ref={canvasRef} className="block w-full h-full pointer-events-none" />
-    </div>
+    <section className={`p-4 flex items-center justify-center h-full w-full relative ${className}`} style={style}>
+      <div ref={wrapperRef} className="w-full h-full relative">
+        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+      </div>
+    </section>
   );
 };
 

@@ -12,12 +12,12 @@ function App() {
       {/* We use absolute positioning and -z-10 to push it behind everything */}
       <div className="absolute inset-0 -z-10">
         <DotGrid
-          dotSize={2}           // Smaller dots look better for backgrounds
-          gap={20}              // Spacing between dots
-          baseColor="#e5e7eb"   // Light gray (Tailwind gray-200)
+          dotSize={6}           // Smaller dots look better for backgrounds
+          gap={15}              // Spacing between dots
+          baseColor="#292136"   // Light gray (Tailwind gray-200)
           activeColor="#5227FF" // Purple on interaction
-          proximity={100}
-          shockRadius={200}
+          proximity={170}
+          shockRadius={250}
         />
       </div>
 

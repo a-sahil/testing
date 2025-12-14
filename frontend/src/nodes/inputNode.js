@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { BaseNode } from './BaseNode';
 import { Position } from 'reactflow';
+import { ArrowDownToLine } from 'lucide-react';
 
 export const InputNode = ({ id, data }) => {
   const [currName, setCurrName] = useState(data?.inputName || id.replace('customInput-', 'input_'));
@@ -12,7 +13,7 @@ export const InputNode = ({ id, data }) => {
   ];
 
   return (
-    <BaseNode id={id} data={data} label="Input" handles={handles}>
+    <BaseNode id={id} data={data} label="Input" handles={handles} icon={ArrowDownToLine}>
       <div className="field-group">
         <label>Name:</label>
         <input 

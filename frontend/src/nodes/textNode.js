@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BaseNode } from './BaseNode';
 import { Position } from 'reactflow';
+import { Type } from 'lucide-react';
 
 export const TextNode = ({ id, data }) => {
   const [currText, setCurrText] = useState(data?.text || '{{input}}');
@@ -47,7 +48,7 @@ export const TextNode = ({ id, data }) => {
   }, [currText]);
 
   return (
-    <BaseNode id={id} data={data} label="Text" handles={handles}>
+    <BaseNode id={id} data={data} label="Text" handles={handles} icon={Type}>
       {/* 
         Hidden Div for measuring text width. 
         MUST match the textarea font/padding styles exactly.

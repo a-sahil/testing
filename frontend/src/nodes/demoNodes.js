@@ -1,11 +1,13 @@
 // frontend/src/nodes/demoNodes.js (Create this file or add to separate files)
 import { BaseNode } from './BaseNode';
 import { Position } from 'reactflow';
+import { RefreshCw, Filter, Database, Globe, StickyNote } from 'lucide-react';
 
 // 1. Transform Node
 export const TransformNode = ({ id, data }) => (
   <BaseNode 
     id={id} label="Transform" 
+    icon={RefreshCw}
     handles={[
       { type: 'target', position: Position.Left, id: 'in' },
       { type: 'source', position: Position.Right, id: 'out' }
@@ -19,6 +21,7 @@ export const TransformNode = ({ id, data }) => (
 export const FilterNode = ({ id, data }) => (
   <BaseNode 
     id={id} label="Filter" 
+    icon={Filter}
     handles={[
       { type: 'target', position: Position.Left, id: 'in' },
       { type: 'source', position: Position.Right, id: 'pass' },
@@ -34,6 +37,7 @@ export const FilterNode = ({ id, data }) => (
 export const DatabaseNode = ({ id, data }) => (
   <BaseNode 
     id={id} label="Database" 
+    icon={Database}
     handles={[{ type: 'target', position: Position.Left, id: 'query' }]}
   >
     <p>PostgreSQL</p>
@@ -44,6 +48,7 @@ export const DatabaseNode = ({ id, data }) => (
 export const APINode = ({ id, data }) => (
   <BaseNode 
     id={id} label="API Call" 
+    icon={Globe}
     handles={[
       { type: 'target', position: Position.Left, id: 'trigger' },
       { type: 'source', position: Position.Right, id: 'response' }
@@ -55,7 +60,7 @@ export const APINode = ({ id, data }) => (
 
 // 5. Note Node (No handles)
 export const NoteNode = ({ id, data }) => (
-  <BaseNode id={id} label="Note" handles={[ { type: 'target', position: Position.Left, id: 'note-target' }]} style={{ background: '#fff3cd', borderColor: '#ffeeba' }}>
+  <BaseNode id={id} label="Note" icon={StickyNote} handles={[{ type: 'target', position: Position.Left, id: 'note-target' }]}>
     <textarea placeholder="Add comments here..." />
   </BaseNode>
 );

@@ -33,18 +33,38 @@ export const SubmitButton = () => {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center',
+      padding: '20px',
+      background: 'rgba(255, 255, 255, 0.02)',
+      borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+    }}>
       <button 
         type="submit" 
         onClick={handleSubmit}
         style={{
-          padding: '10px 20px',
-          background: '#6366f1',
+          padding: '12px 32px',
+          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
           color: 'white',
           border: 'none',
-          borderRadius: '6px',
+          borderRadius: '8px',
           cursor: 'pointer',
-          fontWeight: 'bold'
+          fontWeight: '600',
+          fontSize: '15px',
+          letterSpacing: '0.02em',
+          boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+          transition: 'all 0.2s ease',
+          minWidth: '120px'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.transform = 'translateY(-2px)';
+          e.target.style.boxShadow = '0 6px 16px rgba(99, 102, 241, 0.5)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.transform = 'translateY(0)';
+          e.target.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.4)';
         }}
       >
         Submit

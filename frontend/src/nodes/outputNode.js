@@ -1,47 +1,35 @@
 // outputNode.js
 
 import { useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { BaseNode } from './BaseNode';
+import { Position } from 'reactflow';
+import { ArrowUpFromLine } from 'lucide-react';
 
 export const OutputNode = ({ id, data }) => {
   const [currName, setCurrName] = useState(data?.outputName || id.replace('customOutput-', 'output_'));
   const [outputType, setOutputType] = useState(data.outputType || 'Text');
 
-  const handleNameChange = (e) => {
-    setCurrName(e.target.value);
-  };
-
-  const handleTypeChange = (e) => {
-    setOutputType(e.target.value);
-  };
+  const handles = [
+    { type: 'target', position: Position.Left, id: 'value' }
+  ];
 
   return (
-    <div style={{width: 200, height: 80, border: '1px solid black'}}>
-      <Handle
-        type="target"
-        position={Position.Left}
-        id={`${id}-value`}
-      />
-      <div>
-        <span>Output</span>
+    <BaseNode id={id} data={data} label="Output" handles={handles} icon={ArrowUpFromLine}>
+      <div className="field-group">
+        <label>Name:</label>
+        <input 
+          type="text" 
+          value={currName} 
+          onChange={(e) => setCurrName(e.target.value)} 
+        />
       </div>
-      <div>
-        <label>
-          Name:
-          <input 
-            type="text" 
-            value={currName} 
-            onChange={handleNameChange} 
-          />
-        </label>
-        <label>
-          Type:
-          <select value={outputType} onChange={handleTypeChange}>
-            <option value="Text">Text</option>
-            <option value="File">Image</option>
-          </select>
-        </label>
+      <div className="field-group">
+        <label>Type:</label>
+        <select value={outputType} onChange={(e) => setOutputType(e.target.value)}>
+          <option value="Text">Text</option>
+          <option value="File">Image</option>
+        </select>
       </div>
-    </div>
+    </BaseNode>
   );
 }

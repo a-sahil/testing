@@ -1,10 +1,11 @@
 // frontend/src/nodes/BaseNode.js
 import { Handle, Position } from 'reactflow';
 
-export const BaseNode = ({ id, data, label, children, handles = [], style = {} }) => {
+export const BaseNode = ({ id, data, label, children, handles = [], style = {}, icon: Icon }) => {
   return (
     <div className="custom-node" style={{ ...style }}>
       <div className="node-header">
+        {Icon && <Icon size={16} style={{ marginRight: '6px' }} />}
         <span>{label}</span>
       </div>
       <div className="node-content">
