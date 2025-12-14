@@ -1,9 +1,5 @@
 # 🚀 Frontend Technical Assessment
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Frontend](https://img.shields.io/badge/frontend-React_%7C_React_Flow-blue)
-![Backend](https://img.shields.io/badge/backend-FastAPI_%7C_Python-yellow)
-
 A visual pipeline editor built as part of the VectorShift technical assessment. This full-stack application allows users to design node-based workflows, create dynamic variables, and validate pipeline topology (DAG detection) via a Python backend.
 
 ## 📋 Table of Contents
