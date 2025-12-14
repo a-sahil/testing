@@ -1,16 +1,16 @@
-// frontend/src/nodes/demoNodes.js (Create this file or add to separate files)
-import { BaseNode } from './BaseNode';
-import { Position } from 'reactflow';
-import { RefreshCw, Filter, Database, Globe, StickyNote } from 'lucide-react';
+import { BaseNode } from "./BaseNode";
+import { Position } from "reactflow";
+import { RefreshCw, Filter, Database, Globe, StickyNote } from "lucide-react";
 
 // 1. Transform Node
 export const TransformNode = ({ id, data }) => (
-  <BaseNode 
-    id={id} label="Transform" 
+  <BaseNode
+    id={id}
+    label="Transform"
     icon={RefreshCw}
     handles={[
-      { type: 'target', position: Position.Left, id: 'in' },
-      { type: 'source', position: Position.Right, id: 'out' }
+      { type: "target", position: Position.Left, id: "in" },
+      { type: "source", position: Position.Right, id: "out" },
     ]}
   >
     <span>Convert format</span>
@@ -19,13 +19,14 @@ export const TransformNode = ({ id, data }) => (
 
 // 2. Filter Node
 export const FilterNode = ({ id, data }) => (
-  <BaseNode 
-    id={id} label="Filter" 
+  <BaseNode
+    id={id}
+    label="Filter"
     icon={Filter}
     handles={[
-      { type: 'target', position: Position.Left, id: 'in' },
-      { type: 'source', position: Position.Right, id: 'pass' },
-      { type: 'source', position: Position.Bottom, id: 'fail' }
+      { type: "target", position: Position.Left, id: "in" },
+      { type: "source", position: Position.Right, id: "pass" },
+      { type: "source", position: Position.Bottom, id: "fail" },
     ]}
   >
     <label>Condition:</label>
@@ -35,10 +36,11 @@ export const FilterNode = ({ id, data }) => (
 
 // 3. Database Node
 export const DatabaseNode = ({ id, data }) => (
-  <BaseNode 
-    id={id} label="Database" 
+  <BaseNode
+    id={id}
+    label="Database"
     icon={Database}
-    handles={[{ type: 'target', position: Position.Left, id: 'query' }]}
+    handles={[{ type: "target", position: Position.Left, id: "query" }]}
   >
     <p>PostgreSQL</p>
   </BaseNode>
@@ -46,21 +48,27 @@ export const DatabaseNode = ({ id, data }) => (
 
 // 4. API Node
 export const APINode = ({ id, data }) => (
-  <BaseNode 
-    id={id} label="API Call" 
+  <BaseNode
+    id={id}
+    label="API Call"
     icon={Globe}
     handles={[
-      { type: 'target', position: Position.Left, id: 'trigger' },
-      { type: 'source', position: Position.Right, id: 'response' }
+      { type: "target", position: Position.Left, id: "trigger" },
+      { type: "source", position: Position.Right, id: "response" },
     ]}
   >
     <input type="text" placeholder="https://api..." />
   </BaseNode>
 );
 
-// 5. Note Node (No handles)
+// 5. Note Node 
 export const NoteNode = ({ id, data }) => (
-  <BaseNode id={id} label="Note" icon={StickyNote} handles={[{ type: 'target', position: Position.Left, id: 'note-target' }]}>
+  <BaseNode
+    id={id}
+    label="Note"
+    icon={StickyNote}
+    handles={[{ type: "target", position: Position.Left, id: "note-target" }]}
+  >
     <textarea placeholder="Add comments here..." />
   </BaseNode>
 );

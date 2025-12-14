@@ -1,18 +1,21 @@
-// frontend/src/nodes/BaseNode.js
-import { Handle, Position } from 'reactflow';
+import { Handle } from "reactflow";
 
-export const BaseNode = ({ id, data, label, children, handles = [], style = {}, icon: Icon }) => {
+export const BaseNode = ({
+  id,
+  label,
+  children,
+  handles = [],
+  style = {},
+  icon: Icon,
+}) => {
   return (
     <div className="custom-node" style={{ ...style }}>
       <div className="node-header">
-        {Icon && <Icon size={16} style={{ marginRight: '6px' }} />}
+        {Icon && <Icon size={16} style={{ marginRight: "6px" }} />}
         <span>{label}</span>
       </div>
-      <div className="node-content">
-        {children}
-      </div>
+      <div className="node-content">{children}</div>
 
-      {/* Render Handles Dynamically */}
       {handles.map((handle, index) => (
         <Handle
           key={`${id}-${handle.id}-${index}`}

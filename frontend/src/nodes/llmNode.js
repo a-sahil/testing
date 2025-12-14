@@ -1,14 +1,22 @@
-// llmNode.js
-
-import { BaseNode } from './BaseNode';
-import { Position } from 'reactflow';
-import { Brain } from 'lucide-react';
+import { BaseNode } from "./BaseNode";
+import { Position } from "reactflow";
+import { Brain } from "lucide-react";
 
 export const LLMNode = ({ id, data }) => {
   const handles = [
-    { type: 'target', position: Position.Left, id: 'system', style: { top: '40%' } },
-    { type: 'target', position: Position.Left, id: 'prompt', style: { top: '60%' } },
-    { type: 'source', position: Position.Right, id: 'response' }
+    {
+      type: "target",
+      position: Position.Left,
+      id: "system",
+      style: { top: "40%" },
+    },
+    {
+      type: "target",
+      position: Position.Left,
+      id: "prompt",
+      style: { top: "60%" },
+    },
+    { type: "source", position: Position.Right, id: "response" },
   ];
 
   return (
@@ -27,4 +35,4 @@ export const LLMNode = ({ id, data }) => {
       </div>
     </BaseNode>
   );
-}
+};

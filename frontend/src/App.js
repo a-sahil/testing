@@ -1,33 +1,27 @@
-import { PipelineToolbar } from './toolbar';
-import { PipelineUI } from './ui';
-import { SubmitButton } from './submit';
-import DotGrid from './DotGrid'; // <--- Import the component
+import { PipelineToolbar } from "./toolbar";
+import { PipelineUI } from "./ui";
+import { SubmitButton } from "./submit";
+import DotGrid from "./DotGrid";
 
 function App() {
   return (
-    // Make the main container relative so we can position the background absolutely
     <div className="relative w-full h-screen overflow-hidden">
-      
-      {/* 1. The DotGrid Background */}
-      {/* We use absolute positioning and -z-10 to push it behind everything */}
       <div className="absolute inset-0 -z-10">
         <DotGrid
-          dotSize={6}           // Smaller dots look better for backgrounds
-          gap={15}              // Spacing between dots
-          baseColor="#292136"   // Light gray (Tailwind gray-200)
-          activeColor="#5227FF" // Purple on interaction
+          dotSize={6}
+          gap={15}
+          baseColor="#292136"
+          activeColor="#5227FF"
           proximity={170}
           shockRadius={250}
         />
       </div>
 
-      {/* 2. Your Existing Application Logic */}
       <div className="relative z-10 h-full flex flex-col">
         <PipelineToolbar />
         <PipelineUI />
         <SubmitButton />
       </div>
-
     </div>
   );
 }
